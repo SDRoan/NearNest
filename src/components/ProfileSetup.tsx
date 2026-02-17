@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../supabaseClient";
 import type { Profile } from "../types";
 
-const HANDLE_MIN = 3;
-const HANDLE_MAX = 20;
-const HANDLE_REGEX = /^[a-zA-Z0-9_]+$/;
+function generateHandle(): string {
+  const id = crypto.randomUUID().slice(0, 8);
+  return `User_${id}`;
+}
 
 interface ProfileSetupProps {
   userId: string;
@@ -12,27 +13,17 @@ interface ProfileSetupProps {
 }
 
 export function ProfileSetup({ userId, onComplete }: ProfileSetupProps) {
-  const [handle, setHandle] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  const valid =
-    handle.length >= HANDLE_MIN &&
-    handle.length <= HANDLE_MAX &&
-    HANDLE_REGEX.test(handle);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!valid || loading) return;
-
-    setLoading(true);
+  const createProfile = async (attempt = 0): Promise<void> => {
+    const handle = generateHandle();
     setError("");
 
     const { data, error: insertError } = await supabase
       .from("profiles")
       .insert({
         id: userId,
-        handle: handle.trim(),
+        handle,
         lat_rounded: 0,
         lon_rounded: 0,
       })
@@ -40,50 +31,47 @@ export function ProfileSetup({ userId, onComplete }: ProfileSetupProps) {
       .single();
 
     if (insertError) {
-      setError(
-        insertError.code === "23505"
-          ? "That handle is already taken"
-          : insertError.message
-      );
-      setLoading(false);
+      if (insertError.code === "23505" && attempt < 3) {
+        createProfile(attempt + 1);
+        return;
+      }
+      setError(insertError.message);
       return;
     }
 
     onComplete(data as Profile);
-    setLoading(false);
   };
+
+  useEffect(() => {
+    createProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (error) {
+    return (
+      <div className="screen">
+        <div className="card">
+          <h1 className="logo">Something went wrong</h1>
+          <p className="error-msg">{error}</p>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => createProfile(0)}
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="screen">
       <div className="card">
-        <h1 className="logo">Set your display name</h1>
-        <p className="text-muted">
-          Choose a handle others will see. {HANDLE_MIN}–{HANDLE_MAX} characters,
-          letters, numbers, and underscores only.
+        <div className="loader" aria-label="Creating your profile" />
+        <p className="text-muted" style={{ marginTop: "1rem" }}>
+          Creating your profile…
         </p>
-
-        <form onSubmit={handleSubmit} className="form">
-          <input
-            type="text"
-            placeholder="handle"
-            value={handle}
-            onChange={(e) => setHandle(e.target.value.toLowerCase())}
-            className="input"
-            minLength={HANDLE_MIN}
-            maxLength={HANDLE_MAX}
-            pattern={HANDLE_REGEX.source}
-            autoComplete="username"
-            disabled={loading}
-          />
-          {error && <p className="error-msg">{error}</p>}
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={!valid || loading}
-          >
-            {loading ? "Creating…" : "Continue"}
-          </button>
-        </form>
       </div>
     </div>
   );

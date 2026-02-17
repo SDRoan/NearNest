@@ -10,7 +10,7 @@ Built with **only free resources**:
 
 ## Tech Stack
 
-- **Auth:** Supabase magic link (OTP email)
+- **Auth:** Supabase anonymous sign-in (no email; random handle auto-generated)
 - **Database:** PostgreSQL + PostGIS (geospatial queries at DB level)
 - **Security:** RLS enforces "nearby only" — `ST_DWithin(geog, 1000m)`
 - **Privacy:** Coarse location only (lat/lon rounded to 3 decimals ≈ 100m)
@@ -41,16 +41,17 @@ Built with **only free resources**:
 5. Paste into a new query, then **Run**.  
    (If you see "already a member" or similar, that's fine — it means it was already added.)
 
-### 4. Configure Auth (Magic Link)
+### 4. Enable Anonymous Auth
+
+1. Go to **Authentication** → **Providers**.
+2. Find **Anonymous sign-ins** and enable it (no email needed; users join with a random handle).
+
+### 5. Configure Auth URLs (optional)
 
 1. Go to **Authentication** → **URL Configuration**.
-2. Add your app URLs:
-   - **Site URL:** `http://localhost:5173` (local) or `https://yourusername.github.io/NearNest/` (GitHub Pages).
-   - **Redirect URLs:** Add both:
-     - `http://localhost:5173/**`
-     - `https://yourusername.github.io/NearNest/**`
+2. Add your app URLs for Site URL and Redirect URLs (e.g. `http://localhost:5173`, `https://your-app.vercel.app`).
 
-### 5. Add API Keys to the App
+### 6. Add API Keys to the App
 
 1. In Supabase, go to **Project Settings** → **API**.
 2. Copy the **Project URL** and **anon public** (or Publishable) key.
@@ -67,7 +68,7 @@ export const SUPABASE_ANON_KEY = "your-anon-key-or-sb_publishable-key-here";
 
 > **Important:** Do not commit real keys if the repo is public. For production, consider environment variables or a separate config. For GitHub Pages, you can use `import.meta.env.VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` and set them as repository secrets in GitHub Actions.
 
-### 6. Run Locally
+### 7. Run Locally
 
 ```bash
 npm install
@@ -76,7 +77,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173).
 
-### 7. Deploy to GitHub Pages
+### 8. Deploy to GitHub Pages
 
 1. Create a GitHub repo (e.g. `NearNest`).
 2. Set the base path for Vite. In `vite.config.ts`, ensure the base is your repo name:
@@ -145,8 +146,8 @@ npm run build
 
 ## App Flow
 
-1. **Login:** Enter email → receive magic link → click to sign in.
-2. **Profile:** Set a handle (display name).
+1. **Join:** Click "Join" → anonymous sign-in (no email).
+2. **Profile:** Random handle (e.g. `User_a1b2c3d4`) is auto-generated.
 3. **Location:** Click "Enable location" → browser asks for permission → coarse location stored.
 4. **Chat:** See nearby messages (last 24h), send messages, refresh, report, or block users.
 5. **Anti-spam:** 1 message per 1.5 seconds.
