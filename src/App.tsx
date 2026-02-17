@@ -3,15 +3,17 @@ import "./App.css";
 import { supabase } from "./supabaseClient";
 import type { User } from "@supabase/supabase-js";
 import type { Profile } from "./types";
+import { useSignedOut } from "./hooks/useSignedOut";
 import { AuthScreen } from "./components/AuthScreen";
 import { ProfileSetup } from "./components/ProfileSetup";
 import { LocationSetup } from "./components/LocationSetup";
-import { ChatScreen } from "./components/ChatScreen";
+import { InboxScreen } from "./components/InboxScreen";
 
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [signedOut, setSignedOut] = useSignedOut();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -62,8 +64,13 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return <AuthScreen />;
+  if (!user || signedOut) {
+    return (
+      <AuthScreen
+        hasSession={!!user && signedOut}
+        onContinue={() => setSignedOut(false)}
+      />
+    );
   }
 
   if (!profile) {
@@ -76,5 +83,5 @@ export default function App() {
     return <LocationSetup profile={profile} onComplete={onLocationSet} />;
   }
 
-  return <ChatScreen profile={profile} />;
+  return <InboxScreen profile={profile} onSignOut={() => setSignedOut(true)} />;
 }

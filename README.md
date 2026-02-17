@@ -1,6 +1,6 @@
 # NearNest — Nearby Chat
 
-A location-based public chat where users can only see and post messages visible to others within ~1km of their current location. No exact location is ever shown. No DMs. Messages auto-expire from the UI after 24 hours.
+A location-based **DM-only** chat. Users see a list of nearby users (within ~1km) and can message them individually. No public feed. No exact location is ever shown.
 
 Built with **only free resources**:
 - **Frontend:** Vite + React + TypeScript
@@ -39,7 +39,9 @@ Built with **only free resources**:
 3. Paste into a new query, then **Run**.
 4. Open `supabase/realtime.sql` and copy its contents.
 5. Paste into a new query, then **Run**.  
-   (If you see "already a member" or similar, that's fine — it means it was already added.)
+6. Open `supabase/migration_dm.sql` and copy its full contents.
+7. Paste into a new query, then **Run** (adds DM support and nearby user list).  
+   (If you see "already a member" for publications or "already exists" for policies, that's fine.)
 
 ### 4. Enable Anonymous Auth
 
@@ -149,9 +151,9 @@ npm run build
 1. **Join:** Click "Join" → anonymous sign-in (no email).
 2. **Profile:** Random handle (e.g. `User_a1b2c3d4`) is auto-generated.
 3. **Location:** Click "Enable location" → browser asks for permission → coarse location stored.
-4. **Chat:** See nearby messages (last 24h), send messages, refresh, report, or block users.
-5. **Anti-spam:** 1 message per 1.5 seconds.
-6. **Block:** Client-side block list (localStorage) hides messages from blocked handles.
+4. **Nearby users:** See a list of other users within ~1km (their handles only).
+5. **DM:** Tap a user to open a direct message conversation. Send and receive messages in real time.
+6. **Anti-spam:** 1 message per 1.5 seconds.
 
 ---
 

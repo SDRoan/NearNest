@@ -10,9 +10,10 @@ const THROTTLE_MS = 1500;
 
 interface ChatScreenProps {
   profile: Profile;
+  onSignOut: () => void;
 }
 
-export function ChatScreen({ profile }: ChatScreenProps) {
+export function ChatScreen({ profile, onSignOut }: ChatScreenProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -112,7 +113,7 @@ export function ChatScreen({ profile }: ChatScreenProps) {
           <button
             type="button"
             className="btn btn-ghost btn-sm"
-            onClick={() => supabase.auth.signOut()}
+            onClick={onSignOut}
             title="Sign out"
           >
             Sign out

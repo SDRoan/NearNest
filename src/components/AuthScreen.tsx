@@ -2,11 +2,20 @@ import { useState } from "react";
 import { supabase } from "../supabaseClient";
 import { isConfigValid } from "../config";
 
-export function AuthScreen() {
+interface AuthScreenProps {
+  hasSession?: boolean;
+  onContinue?: () => void;
+}
+
+export function AuthScreen({ hasSession, onContinue }: AuthScreenProps) {
   const [status, setStatus] = useState<"idle" | "joining" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   const handleJoin = async () => {
+    if (hasSession && onContinue) {
+      onContinue();
+      return;
+    }
     if (!isConfigValid) return;
 
     setStatus("joining");
@@ -54,10 +63,16 @@ export function AuthScreen() {
               onClick={handleJoin}
               disabled={status === "joining"}
             >
-              {status === "joining" ? "Joining…" : "Join"}
+              {hasSession
+                ? "Continue"
+                : status === "joining"
+                  ? "Joining…"
+                  : "Join"}
             </button>
             <p className="text-muted" style={{ fontSize: "0.8rem", marginTop: "0.5rem" }}>
-              You’ll get a random name. No email required.
+              {hasSession
+                ? "Return to chat with your same name."
+                : "You'll get a random name. No email required."}
             </p>
           </>
         )}
